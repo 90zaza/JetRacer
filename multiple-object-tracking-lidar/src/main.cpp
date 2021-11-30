@@ -54,16 +54,21 @@ cv::KalmanFilter KF3(stateDim, measDim, ctrlDim, CV_32F);
 cv::KalmanFilter KF4(stateDim, measDim, ctrlDim, CV_32F);
 cv::KalmanFilter KF5(stateDim, measDim, ctrlDim, CV_32F);
 
-ros::Publisher pub_cluster0;
-ros::Publisher pub_cluster1;
-ros::Publisher pub_cluster2;
-ros::Publisher pub_cluster3;
-ros::Publisher pub_cluster4;
-ros::Publisher pub_cluster5;
+ros::Publisher pub_carInFrontOf2;
+//ros::Publisher pub_cluster0;
+//ros::Publisher pub_cluster1;
+//ros::Publisher pub_cluster2;
+//ros::Publisher pub_cluster3;
+//ros::Publisher pub_cluster4;
+//ros::Publisher pub_cluster5;
 
-ros::Publisher markerPub;
+//ros::Publisher markerPub;
 
 std::vector<geometry_msgs::Point> prevClusterCenters;
+std::list<int> possibleCarList;
+std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cluster_vec;
+
+int carNumber;
 
 cv::Mat state(stateDim, 1, CV_32F);
 cv::Mat_<float> measurement(2, 1);
@@ -228,7 +233,7 @@ void KFT(const std_msgs::Float32MultiArray ccs) {
     cout<<"\n";
     */
 
-  visualization_msgs::MarkerArray clusterMarkers;
+//  visualization_msgs::MarkerArray clusterMarkers;
 
   for (int i = 0; i < 6; i++) {
     visualization_msgs::Marker m;
@@ -251,12 +256,12 @@ void KFT(const std_msgs::Float32MultiArray ccs) {
     m.pose.position.y = clusterC.y;
     m.pose.position.z = clusterC.z;
 
-    clusterMarkers.markers.push_back(m);
+//    clusterMarkers.markers.push_back(m);
   }
 
   prevClusterCenters = clusterCenters;
 
-  markerPub.publish(clusterMarkers);
+//  markerPub.publish(clusterMarkers);
 
   std_msgs::Int32MultiArray obj_id;
   for (auto it = objID.begin(); it != objID.end(); it++)
@@ -401,7 +406,7 @@ void cloud_cb(const sensor_msgs::PointCloud2ConstPtr &input)
     std::vector<pcl::PointIndices>::const_iterator it;
     std::vector<int>::const_iterator pit;
     // Vector of cluster pointclouds
-    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cluster_vec;
+    // std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cluster_vec;
     // Cluster centroids
     std::vector<pcl::PointXYZ> clusterCentroids;
 
@@ -496,6 +501,16 @@ void cloud_cb(const sensor_msgs::PointCloud2ConstPtr &input)
       pt.x = clusterCentroids.at(i).x;
       pt.y = clusterCentroids.at(i).y;
       prevClusterCenters.push_back(pt);
+      if (clusterCentroids.at(i).x > 0.15 && clusterCentroids.at(i).x < 0.30 && clusterCentroids.at(i).y < 0.05 && clusterCentroids.at(i).y > -0.05) {
+ 	possibleCarList.push_back(i);
+        if (possibleCarList.size() == 1) {
+          carNumber = possibleCarList.back();
+          std::cout << "!! CAR NUMBER !!: " << carNumber;
+        }
+        else {
+          firstFrame = true;
+        }
+      }
     }
     /*  // Print the initial state of the kalman filter for debugging
       cout<<"KF0.satePre="<<KF0.statePre.at<float>(0)<<","<<KF0.statePre.at<float>(1)<<"\n";
@@ -616,60 +631,61 @@ void cloud_cb(const sensor_msgs::PointCloud2ConstPtr &input)
 
     // cc_pos.publish(cc);// Publish cluster mid-points.
     KFT(cc);
-    int i = 0;
-    bool publishedCluster[6];
-    for (auto it = objID.begin(); it != objID.end();
-         it++) { // cout<<"Inside the for loop\n";
+    //int i = 0;
+    //bool publishedCluster[6];
+    //for (auto it = objID.begin(); it != objID.end();
+    //     it++) { // cout<<"Inside the for loop\n";
 
-      switch (i) {
-        cout << "Inside the switch case\n";
-      case 0: {
-        publish_cloud(pub_cluster0, cluster_vec[*it]);
-        publishedCluster[i] =
-            true; // Use this flag to publish only once for a given obj ID
-        i++;
-        break;
-      }
-      case 1: {
-        publish_cloud(pub_cluster1, cluster_vec[*it]);
-        publishedCluster[i] =
-            true; // Use this flag to publish only once for a given obj ID
-        i++;
-        break;
-      }
-      case 2: {
-        publish_cloud(pub_cluster2, cluster_vec[*it]);
-        publishedCluster[i] =
-            true; // Use this flag to publish only once for a given obj ID
-        i++;
-        break;
-      }
-      case 3: {
-        publish_cloud(pub_cluster3, cluster_vec[*it]);
-        publishedCluster[i] =
-            true; // Use this flag to publish only once for a given obj ID
-        i++;
-        break;
-      }
-      case 4: {
-        publish_cloud(pub_cluster4, cluster_vec[*it]);
-        publishedCluster[i] =
-            true; // Use this flag to publish only once for a given obj ID
-        i++;
-        break;
-      }
+//      switch (i) {
+//        cout << "Inside the switch case\n";
+//      case 0: {
+//        publish_cloud(pub_cluster0, cluster_vec[*it]);
+//        publishedCluster[i] =
+//            true; // Use this flag to publish only once for a given obj ID
+//        i++;
+//        break;
+//      }
+//      case 1: {
+//        publish_cloud(pub_cluster1, cluster_vec[*it]);
+//        publishedCluster[i] =
+//            true; // Use this flag to publish only once for a given obj ID
+//        i++;
+//        break;
+//      }
+//      case 2: {
+//        publish_cloud(pub_cluster2, cluster_vec[*it]);
+//        publishedCluster[i] =
+//            true; // Use this flag to publish only once for a given obj ID
+//        i++;
+//        break;
+//      }
+//      case 3: {
+//        publish_cloud(pub_cluster3, cluster_vec[*it]);
+//        publishedCluster[i] =
+//            true; // Use this flag to publish only once for a given obj ID
+//        i++;
+//        break;
+//      }
+//      case 4: {
+//        publish_cloud(pub_cluster4, cluster_vec[*it]);
+//        publishedCluster[i] =
+//            true; // Use this flag to publish only once for a given obj ID
+//        i++;
+//        break;
+//      }
 
-      case 5: {
-        publish_cloud(pub_cluster5, cluster_vec[*it]);
-        publishedCluster[i] =
-            true; // Use this flag to publish only once for a given obj ID
-        i++;
-        break;
-      }
-      default:
-        break;
-      }
-    }
+//      case 5: {
+//        publish_cloud(pub_cluster5, cluster_vec[*it]);
+//        publishedCluster[i] =
+//            true; // Use this flag to publish only once for a given obj ID
+//        i++;
+//        break;
+//      }
+//      default:
+//        break;
+//      }
+//    }
+    publish_cloud(pub_carInFrontOf2, cluster_vec[carNumber]);
   }
 }
 
@@ -685,14 +701,15 @@ int main(int argc, char **argv) {
 
   // Create a ROS subscriber for the input point cloud
   //ros::Subscriber sub = nh.subscribe("filtered_cloud", 1, cloud_cb);
-  ros::Subscriber sub = nh.subscribe("point_cloud2", 1, cloud_cb);
+  ros::Subscriber sub = nh.subscribe("PCLcar1", 1, cloud_cb);
   // Create a ROS publisher for the output point cloud
-  pub_cluster0 = nh.advertise<sensor_msgs::PointCloud2>("cluster_0", 1);
-  pub_cluster1 = nh.advertise<sensor_msgs::PointCloud2>("cluster_1", 1);
-  pub_cluster2 = nh.advertise<sensor_msgs::PointCloud2>("cluster_2", 1);
-  pub_cluster3 = nh.advertise<sensor_msgs::PointCloud2>("cluster_3", 1);
-  pub_cluster4 = nh.advertise<sensor_msgs::PointCloud2>("cluster_4", 1);
-  pub_cluster5 = nh.advertise<sensor_msgs::PointCloud2>("cluster_5", 1);
+  pub_carInFrontOf2 = nh.advertise<sensor_msgs::PointCloud2>("PCLinFrontOf1", 1);
+  //pub_cluster0 = nh.advertise<sensor_msgs::PointCloud2>("cluster_0", 1);
+  //pub_cluster1 = nh.advertise<sensor_msgs::PointCloud2>("cluster_1", 1);
+  //pub_cluster2 = nh.advertise<sensor_msgs::PointCloud2>("cluster_2", 1);
+  //pub_cluster3 = nh.advertise<sensor_msgs::PointCloud2>("cluster_3", 1);
+  //pub_cluster4 = nh.advertise<sensor_msgs::PointCloud2>("cluster_4", 1);
+  //pub_cluster5 = nh.advertise<sensor_msgs::PointCloud2>("cluster_5", 1);
   // Subscribe to the clustered pointclouds
   // ros::Subscriber c1=nh.subscribe("ccs",100,KFT);
   objID_pub = nh.advertise<std_msgs::Int32MultiArray>("obj_id", 1);
@@ -700,7 +717,7 @@ int main(int argc, char **argv) {
    */
 
   // cc_pos=nh.advertise<std_msgs::Float32MultiArray>("ccs",100);//clusterCenter1
-  markerPub = nh.advertise<visualization_msgs::MarkerArray>("viz", 1);
+  //markerPub = nh.advertise<visualization_msgs::MarkerArray>("viz", 1);
 
   /* Point cloud clustering
    */
