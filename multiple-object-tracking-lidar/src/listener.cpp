@@ -17,25 +17,25 @@ int objectNumberCar;
 std::string objectTopicCar;
 ros::Publisher pub_carInFront;
 
-int initialiser(boost::shared_ptr<visualization_msgs::MarkerArray const> incoming_array) {
-  for (int i = 0; i < 6; i++) {
-    if (incoming_array.get()->markers[i].pose.position.x > 0.15 && incoming_array.get()->markers[i].pose.position.x < 0.20){
-      object_list.push_back(i);
-      if (object_list.size() > 1 && object_list.size() != 0) {
-	if (incoming_array.get()->markers[i].pose.position.y == 0 && incoming_array.get()->markers[i].pose.position.y > 0.05 && incoming_array.get()->markers[i].pose.position.y < -0.05){
-	  object_list.remove(i);
-	}
-      }
-    }
-  }
+//int initialiser(boost::shared_ptr<visualization_msgs::MarkerArray const> incoming_array) {
+//  for (int i = 0; i < 6; i++) {
+//    if (incoming_array.get()->markers[i].pose.position.x > 0.15 && incoming_array.get()->markers[i].pose.position.x < 0.20){
+//      object_list.push_back(i);
+//      if (object_list.size() > 1 && object_list.size() != 0) {
+//	if (incoming_array.get()->markers[i].pose.position.y == 0 && incoming_array.get()->markers[i].pose.position.y > 0.05 && incoming_array.get()->markers[i].pose.position.y < -0.05){
+//	  object_list.remove(i);
+//	}
+//      }
+//    }
+//  }
   
-  if (object_list.size() == 1) {
-    return object_list.back();
-  }
-  else {
-    return 6;
-  }
-}
+//  if (object_list.size() == 1) {
+//    return object_list.back();
+//  }
+//  else {
+//    return 6;
+//  }
+//}
 
 void publisher(const sensor_msgs::PointCloud2ConstPtr &input) {
   pcl::PCLPointCloud2 pcl_pc2;
@@ -60,7 +60,8 @@ void publisher(const sensor_msgs::PointCloud2ConstPtr &input) {
   //std::cout << "numPts: " << numPts << " x: " << centroid.x << " y: " <<centroid.y << "\n";
 
   int maxTheta = 18000;
-  std::vector<std::vector<int>> accu(1000,std::vector<int>(maxTheta));
+  int maxXRange = 3000;
+  std::vector<std::vector<int>> accu(maxXRange,std::vector<int>(maxTheta));
 
   for (int j = 0; j < temp_cloud->points.size(); j++) {
     for (int theta = 0; theta < maxTheta; theta++) {
@@ -74,7 +75,7 @@ void publisher(const sensor_msgs::PointCloud2ConstPtr &input) {
   
   int max = 0;
   double pmaxr, pmaxt = 0;
-  for (int k = 0; k < 1000; k++) {
+  for (int k = 0; k < maxXRange; k++) {
     for (int l = 0; l < maxTheta; l++) {
       //std::cout << accu[k][l] << ",";
       if (accu[k][l] > max) {
@@ -98,23 +99,16 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "listener");
   ros::NodeHandle n;
   
-  if (!mainMSG) {
-    mainMSG = ros::topic::waitForMessage<visualization_msgs::MarkerArray>("/viz");
+//  if (!mainMSG) {
+//    mainMSG = ros::topic::waitForMessage<visualization_msgs::MarkerArray>("/viz");
 
-    objectNumberCar = initialiser(mainMSG);
-    objectTopicCar = "cluster_" + std::to_string(objectNumberCar);
-  }
+//    objectNumberCar = initialiser(mainMSG);
+//    objectTopicCar = "cluster_" + std::to_string(objectNumberCar);
+//  }
 
-  if (objectNumberCar != 6) {
-    std::cout << objectTopicCar;
-    pub_carInFront = n.advertise<geometry_msgs::Twist>("carInFront",1);
-    ros::Subscriber sub = n.subscribe(objectTopicCar, 1, publisher);
-    ros::spin();
-  }
-
-  else {
-  std::cout << "No car has been recognized.\n Aborting program...";
-  }
+  pub_carInFront = n.advertise<geometry_msgs::Twist>("dataInFrontOf1",1);
+  ros::Subscriber sub = n.subscribe("PCLinFrontOf1", 1, publisher);
+  ros::spin();
 
   return 0;
 }
