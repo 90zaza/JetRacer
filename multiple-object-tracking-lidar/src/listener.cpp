@@ -2,6 +2,10 @@
 #include <geometry_msgs/Twist.h>
 #include <math.h>
 #include <ros/ros.h>
+#include <bits/stdc++.h>
+#include <list>
+#include <algorithm>
+#include <iostream>
 
 #include <pcl/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -11,7 +15,7 @@
 
 #define pi 3.14159265359
 
-boost::shared_ptr<visualization_msgs::MarkerArray const> mainMSG;
+//boost::shared_ptr<visualization_msgs::MarkerArray const> mainMSG;
 std::list<double> object_list;
 int objectNumberCar;
 std::string objectTopicCar;
@@ -74,17 +78,44 @@ void publisher(const sensor_msgs::PointCloud2ConstPtr &input) {
   }
   
   int max = 0;
-  double pmaxr, pmaxt = 0;
+  std::list<int> rList;
+  std::list<int> tList;
+
   for (int k = 0; k < maxXRange; k++) {
     for (int l = 0; l < maxTheta; l++) {
       //std::cout << accu[k][l] << ",";
       if (accu[k][l] > max) {
         max = accu[k][l];
-        pmaxr = k / double(1000);
-        pmaxt = (90 - l / double(100)) * pi/180;
       }
     }
   }
+  for (int k = 0; k < maxXRange; k++) {
+    for (int l = 0; l < maxTheta; l++) {
+      if (accu[k][l] == max) {
+        rList.push_back(k);
+	tList.push_back(l);
+      }
+    }
+  }
+  
+  rList.sort();
+  tList.sort();
+  
+  int rArr[rList.size()], tArr[tList.size()];
+  std::copy(rList.begin(), rList.end(), rArr);
+  std::copy(tList.begin(), tList.end(), tArr);
+  int count = 0;
+  double tempr, tempt, pmaxr, pmaxt = 0;
+  
+  for (int m = 0; m < rList.size(); m++) {
+    tempr += rArr[m];
+    tempt += tArr[m];
+    count ++;
+  }
+
+  pmaxr = (tempr / count) / double(1000);
+  pmaxt = (90 - (tempt / count) / double(100)) * pi / 180;
+
   geometry_msgs::Twist msg;
   msg.linear.x = centroid.x;
   msg.linear.y = centroid.y;
