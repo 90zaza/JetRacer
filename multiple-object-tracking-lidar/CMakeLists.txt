@@ -111,8 +111,10 @@ include_directories(
 # add_executable(kf_tracker_node src/kf_tracker_node.cpp)
 add_executable( kf_tracker src/main.cpp )
 add_executable( listener src/listener.cpp)
+add_executable( cluster src/cluster.cpp
 target_link_libraries ( kf_tracker ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 target_link_libraries ( listener ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries ( cluster ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
  
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -145,6 +147,12 @@ install(TARGETS kf_tracker
 )
 
 install(TARGETS listener
+	ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+	LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+	RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(TARGETS cluster
 	ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 	LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 	RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
