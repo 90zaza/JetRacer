@@ -701,7 +701,7 @@ int main(int argc, char **argv) {
 
   // Create a ROS subscriber for the input point cloud
   //ros::Subscriber sub = nh.subscribe("filtered_cloud", 1, cloud_cb);
-  ros::Subscriber sub = nh.subscribe("PCLcar1", 1, cloud_cb);
+  ros::Subscriber sub = nh.subscribe("PCLfilteredCar1", 1, cloud_cb);
   // Create a ROS publisher for the output point cloud
   pub_carInFrontOf2 = nh.advertise<sensor_msgs::PointCloud2>("PCLinFrontOf1", 1);
   //pub_cluster0 = nh.advertise<sensor_msgs::PointCloud2>("cluster_0", 1);
